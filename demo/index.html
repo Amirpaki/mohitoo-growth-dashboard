@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Mohitoo Growth Dashboard — Interactive Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232DD4B0'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='bold' text-anchor='middle' fill='%2304211C'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#080F0E; --panel:#0C1817; --panel-2:#0F1F1D; --line:#1C3A36;
+    --mint:#2DD4B0; --cyan:#22D3EE; --gold:#D4AF37;
+    --text:#E7F5F1; --muted:#8FB5AD;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+    line-height:1.6;min-height:100vh;position:relative;overflow-x:hidden;
+  }
+  .watermarks{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .watermarks span{
+    position:absolute;font-size:64px;font-weight:800;letter-spacing:8px;
+    color:rgba(45,212,176,.05);white-space:nowrap;transform:rotate(-18deg);
+  }
+  .watermarks span:nth-child(1){top:12%;left:-5%}
+  .watermarks span:nth-child(2){top:48%;left:20%}
+  .watermarks span:nth-child(3){top:84%;left:-10%}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+
+  /* header */
+  .top{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .mark{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--mint),var(--cyan));color:#04211C;
+    font-weight:800;font-size:22px;
+  }
+  .brand b{font-size:17px;display:block}
+  .brand small{color:var(--muted);font-size:12.5px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    font-size:12px;color:var(--muted);border:1px solid var(--line);
+    padding:5px 11px;border-radius:999px;background:var(--panel);
+  }
+  .chip strong{color:var(--mint)}
+  h1{font-size:clamp(22px,4vw,30px);margin:10px 0 4px}
+  .sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+  .tab{
+    cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:600;font-family:inherit;
+    transition:.18s;
+  }
+  .tab:hover{color:var(--text);border-color:var(--mint)}
+  .tab[aria-selected="true"]{background:linear-gradient(135deg,var(--mint),var(--cyan));color:#04211C;border-color:transparent}
+
+  section[hidden]{display:none}
+  .lead{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-end;margin-bottom:20px}
+  .kicker{color:var(--mint);font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;display:block;margin-bottom:4px}
+  .lead h2{font-size:clamp(19px,3vw,25px);max-width:560px}
+  .lead p{color:var(--muted);font-size:14px;max-width:380px}
+  .grid{display:grid;gap:16px;margin-bottom:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:840px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;
+  }
+  .card .kicker{margin-bottom:6px}
+  .card h3{font-size:16.5px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:13.5px}
+  .big{font-size:34px;font-weight:800;color:var(--mint);line-height:1.1}
+  .gold{color:var(--gold)}
+
+  /* health donut */
+  .donut-row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .donut{
+    width:110px;height:110px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--mint) 0 72%, #16302C 72% 100%);
+    display:grid;place-items:center;
+  }
+  .donut i{
+    width:78px;height:78px;border-radius:50%;background:var(--panel);font-style:normal;
+    display:grid;place-items:center;font-weight:800;font-size:19px;color:var(--mint);
+  }
+  .metrics{flex:1;min-width:200px;display:grid;gap:10px}
+  .metric{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:8px;font-size:13.5px}
+  .metric b{color:var(--text)}
+  .metric span{color:var(--muted)}
+
+  /* bar chart */
+  .chart{display:flex;gap:14px;align-items:flex-end;height:170px;padding-top:10px}
+  .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;text-align:center;height:100%}
+  .bar i{
+    display:block;border-radius:8px 8px 3px 3px;
+    background:linear-gradient(180deg,var(--mint),rgba(45,212,176,.25));font-style:normal;
+  }
+  .bar:nth-child(2) i{background:linear-gradient(180deg,var(--cyan),rgba(34,211,238,.2))}
+  .bar:last-child i{background:linear-gradient(180deg,var(--gold),rgba(212,175,55,.2))}
+  .bar small{color:var(--muted);font-size:11.5px}
+  .bar b{font-size:13px}
+
+  /* matrix */
+  .role ul{list-style:none;display:grid;gap:6px;margin-top:10px}
+  .role li{font-size:13px;color:var(--muted);border-left:2px solid var(--mint);padding-left:10px}
+  .role li b{color:var(--text);font-weight:600}
+
+  /* plan */
+  .phase h3{display:flex;align-items:center;gap:8px}
+  .phase .num{
+    width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none;
+    background:rgba(45,212,176,.12);color:var(--mint);font-size:13px;font-weight:800;
+  }
+  .phase ul{list-style:none;display:grid;gap:8px;margin-top:12px}
+  .phase li{font-size:13.5px;color:var(--muted);display:flex;gap:8px}
+  .phase li::before{content:"→";color:var(--mint);flex:none}
+
+  /* ideas */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .filter{
+    cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--muted);
+    background:var(--panel);border:1px solid var(--line);padding:7px 14px;border-radius:999px;transition:.18s;
+  }
+  .filter:hover{color:var(--text)}
+  .filter.active{border-color:var(--mint);color:var(--mint)}
+  .ideas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:840px){.ideas{grid-template-columns:1fr}}
+  .idea{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .idea[hidden]{display:none}
+  .idea .tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .idea[data-group="reach"] .tag{color:var(--mint)}
+  .idea[data-group="trust"] .tag{color:var(--cyan)}
+  .idea[data-group="convert"] .tag{color:var(--gold)}
+  .idea h4{font-size:14px;margin:6px 0 8px;line-height:1.45}
+  .idea p{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .idea .meta{font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+  .idea .meta b{color:var(--text);font-weight:600}
+
+  /* footer */
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+  footer a{color:var(--mint);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="watermarks" aria-hidden="true">
+  <span>MOHITOO • CODE EXPERIENCE</span>
+  <span>MOHITOO • CODE EXPERIENCE</span>
+  <span>MOHITOO • CODE EXPERIENCE</span>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">M</span>
+      <span><b>Kod Mohitoo</b><small>Growth decision dashboard for Instagram-based businesses</small></span>
+    </div>
+    <div class="chips">
+      <span class="chip">Sample structure — <strong>no client data</strong></span>
+      <span class="chip">Interactive demo</span>
+    </div>
+  </div>
+
+  <h1>From scattered signals to one clear decision</h1>
+  <p class="sub">A 9-section dashboard that turns a client's official Instagram data export into a diagnosis, a plan, and this week's priorities. Switch tabs to explore.</p>
+
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+    <button class="tab" role="tab" aria-selected="true"  aria-controls="audit"   data-target="audit">Page Audit</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="data"    data-target="data">Data Analysis</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="matrix"  data-target="matrix">Content Matrix</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="plan"    data-target="plan">90-Day Plan</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="ideas"   data-target="ideas">Idea Bank</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="summary" data-target="summary">Summary</button>
+  </nav>
+
+  <main>
+    <!-- AUDIT -->
+    <section id="audit" role="tabpanel">
+      <div class="lead">
+        <div><span class="kicker">A real picture of where the page stands</span><h2>Diagnosis before action — always</h2></div>
+        <p>This section shows where the main problem is, what is healthy, and which fix comes first.</p>
+      </div>
+      <div class="grid g3">
+        <article class="card">
+          <span class="kicker">Root-cause diagnosis</span>
+          <h3>Growth is stalling at conversion, not reach</h3>
+          <p>Sample finding: the page reaches new people consistently, but the path from viewer to request is weak.</p>
+        </article>
+        <article class="card">
+          <span class="kicker">Account health</span>
+          <div class="donut-row">
+            <div class="donut" role="img" aria-label="Health score 72 out of 100"><i>72</i></div>
+            <div class="metrics">
+              <div class="metric"><span>Visibility</span><b>Strong</b></div>
+              <div class="metric"><span>Engagement</span><b>Medium</b></div>
+              <div class="metric"><span>Conversion</span><b>Weak</b></div>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <span class="kicker">Expansible opportunity</span>
+          <h3>The page's winning pattern</h3>
+          <p>Sample finding: one topic and format clearly earns repeated saves — worth turning into a series.</p>
+        </article>
+      </div>
+      <div class="grid g3">
+        <article class="card"><span class="kicker">What you see</span><h3>Main page sections</h3><p>Scores, evidence, strengths and the root problem.</p></article>
+        <article class="card"><span class="kicker">What it means</span><h3>Where the main blocker is</h3><p>Content, showcase, audience, or the conversion path.</p></article>
+        <article class="card"><span class="kicker">What you decide</span><h3>First fix priority</h3><p>The first change with the biggest effect on the path.</p></article>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section id="data" role="tabpanel" hidden>
+      <div class="lead">
+        <div><span class="kicker">30- and 90-day analysis</span><h2>Numbers don't sit side by side — they connect</h2></div>
+        <p>Reach, engagement, saves, profile visits and growth are read together to separate what actually works from vanity numbers.</p>
+      </div>
+      <div class="grid g2">
+        <article class="card">
+          <span class="kicker">Share of views by format</span>
+          <div class="chart" role="img" aria-label="Sample bar chart of view share by format">
+            <div class="bar"><b>42%</b><i style="height:84%"></i><small>Reels</small></div>
+            <div class="bar"><b>27%</b><i style="height:54%"></i><small>Carousels</small></div>
+            <div class="bar"><b>14%</b><i style="height:28%"></i><small>Images</small></div>
+            <div class="bar"><b>9%</b><i style="height:18%"></i><small>Stories</small></div>
+            <div class="bar"><b>8%</b><i style="height:16%"></i><small>Other</small></div>
+          </div>
+        </article>
+        <article class="card">
+          <span class="kicker">Custom KPI table</span>
+          <div class="metrics" style="margin-top:8px">
+            <div class="metric"><span>Reach / month</span><b>Sample: 120,400</b></div>
+            <div class="metric"><span>Net follower growth</span><b>Sample: +1,830</b></div>
+            <div class="metric"><span>Engagement rate</span><b>Sample: 5.8%</b></div>
+            <div class="metric"><span>Save rate (educational)</span><b>Sample: 9.7%</b></div>
+            <div class="metric"><span>Profile → request conversion</span><b>Sample: 1.4%</b></div>
+          </div>
+        </article>
+      </div>
+      <div class="grid g2">
+        <article class="card"><span class="kicker">Winning pattern</span><h3>What made it work</h3><p>For each recent post, the analysis pinpoints what drove visibility, saves, or the performance drop.</p></article>
+        <article class="card"><span class="kicker">Real growth signal</span><h3>Trends, ratios and baselines</h3><p>Each format's performance is compared against the page's own baseline — not against someone else's viral peak.</p></article>
+      </div>
+    </section>
+
+    <!-- MATRIX -->
+    <section id="matrix" role="tabpanel" hidden>
+      <div class="lead">
+        <div><span class="kicker">Custom content architecture</span><h2>Every piece of content has one clear job</h2></div>
+        <p>Four roles per post: each column gets its own goal, format, CTA and success metric.</p>
+      </div>
+      <div class="grid g4">
+        <article class="card role">
+          <span class="kicker">Reach</span><h3>Get seen</h3>
+          <ul>
+            <li><b>Goal:</b> new, relevant audience</li>
+            <li><b>Format:</b> short reels with a strong hook</li>
+            <li><b>CTA:</b> follow / save</li>
+            <li><b>Metric:</b> reach & non-follower share</li>
+          </ul>
+        </article>
+        <article class="card role">
+          <span class="kicker">Trust</span><h3>Be believed</h3>
+          <ul>
+            <li><b>Goal:</b> tangible expertise</li>
+            <li><b>Format:</b> carousels, breakdowns, proof</li>
+            <li><b>CTA:</b> save / share</li>
+            <li><b>Metric:</b> save + share rate</li>
+          </ul>
+        </article>
+        <article class="card role">
+          <span class="kicker">Personality</span><h3>Be relatable</h3>
+          <ul>
+            <li><b>Goal:</b> the human behind the brand</li>
+            <li><b>Format:</b> stories, behind-the-scenes</li>
+            <li><b>CTA:</b> reply / DM</li>
+            <li><b>Metric:</b> replies & mentions</li>
+          </ul>
+        </article>
+        <article class="card role">
+          <span class="kicker">Conversion</span><h3>Get action</h3>
+          <ul>
+            <li><b>Goal:</b> move ready people to act</li>
+            <li><b>Format:</b> case results, clear offers</li>
+            <li><b>CTA:</b> request a review</li>
+            <li><b>Metric:</b> link taps & requests</li>
+          </ul>
+        </article>
+      </div>
+      <div class="grid g2">
+        <article class="card"><span class="kicker">Funnel balance</span><h3>The page is not just visibility</h3><p>Trust and action are built on purpose, not by accident.</p></article>
+        <article class="card"><span class="kicker">Publishing plan</span><h3>This week's mix</h3><p>Which combination of the four roles should be produced this week.</p></article>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section id="plan" role="tabpanel" hidden>
+      <div class="lead">
+        <div><span class="kicker">A followable roadmap</span><h2>From analysis to execution in three phases</h2></div>
+        <p>Each phase has a focus, weekly outputs, and a review point on the path.</p>
+      </div>
+      <div class="grid g3">
+        <article class="card phase">
+          <h3><span class="num">1</span>Fix</h3>
+          <ul>
+            <li>Repair the message, showcase and main blockers</li>
+            <li>Set the measurement baseline</li>
+            <li>Stop the leaks before scaling anything</li>
+          </ul>
+        </article>
+        <article class="card phase">
+          <h3><span class="num">2</span>Grow</h3>
+          <ul>
+            <li>Double down on the page's winning patterns</li>
+            <li>Run controlled content experiments</li>
+            <li>Build the reach → trust pipeline</li>
+          </ul>
+        </article>
+        <article class="card phase">
+          <h3><span class="num">3</span>Convert</h3>
+          <ul>
+            <li>Redesign the path from viewer to request</li>
+            <li>Publish proof and case results</li>
+            <li>Review metrics against the baseline</li>
+          </ul>
+        </article>
+      </div>
+      <div class="grid g3">
+        <article class="card"><span class="kicker">12 prioritized weeks</span><h3>Focus & output per week</h3><p>No endless backlog — a clear focus for every week.</p></article>
+        <article class="card"><span class="kicker">Clear dependencies</span><h3>Fix before grow</h3><p>Blockers and baselines come before any scaling work.</p></article>
+        <article class="card"><span class="kicker">This week</span><h3>Start without confusion</h3><p>You know exactly where to start, and with which metric.</p></article>
+      </div>
+    </section>
+
+    <!-- IDEAS -->
+    <section id="ideas" role="tabpanel" hidden>
+      <div class="lead">
+        <div><span class="kicker">Searchable idea bank</span><h2>Ideas built from the page's own problem</h2></div>
+        <p>Sample ideas grouped by funnel role. In a real delivery, each idea connects to the page's own data and week goal.</p>
+      </div>
+      <div class="filters" role="group" aria-label="Filter ideas by role">
+        <button class="filter active" data-group="all">All</button>
+        <button class="filter" data-group="reach">Reach</button>
+        <button class="filter" data-group="trust">Trust</button>
+        <button class="filter" data-group="convert">Convert</button>
+      </div>
+      <div class="ideas" id="idea-grid">
+        <article class="idea" data-group="reach">
+          <span class="tag">Reach</span>
+          <h4>High views ≠ page growth</h4>
+          <p>A three-layer hook that separates reach from real growth.</p>
+          <div class="meta"><b>Format:</b> 30-35s reel · <b>Metric:</b> reach</div>
+        </article>
+        <article class="idea" data-group="reach">
+          <span class="tag">Reach</span>
+          <h4>The 3 numbers owners check wrong</h4>
+          <p>Contrarian angle that stops the scroll with a familiar mistake.</p>
+          <div class="meta"><b>Format:</b> reel · <b>Metric:</b> non-follower reach</div>
+        </article>
+        <article class="idea" data-group="reach">
+          <span class="tag">Reach</span>
+          <h4>Why your best post didn't bring requests</h4>
+          <p>Narrative hook that names the audience's own confusion.</p>
+          <div class="meta"><b>Format:</b> reel · <b>Metric:</b> reach → profile visit</div>
+        </article>
+        <article class="idea" data-group="trust">
+          <span class="tag">Trust</span>
+          <h4>From view to request: the full path</h4>
+          <p>An 8-slide breakdown of the conversion path with evidence.</p>
+          <div class="meta"><b>Format:</b> carousel · <b>Metric:</b> save + share</div>
+        </article>
+        <article class="idea" data-group="trust">
+          <span class="tag">Trust</span>
+          <h4>Read your insights like an analyst</h4>
+          <p>Step-by-step structure that makes expertise tangible.</p>
+          <div class="meta"><b>Format:</b> carousel · <b>Metric:</b> save rate</div>
+        </article>
+        <article class="idea" data-group="trust">
+          <span class="tag">Trust</span>
+          <h4>Signals are not problems</h4>
+          <p>Teaches the difference between a number and a diagnosis.</p>
+          <div class="meta"><b>Format:</b> carousel · <b>Metric:</b> shares</div>
+        </article>
+        <article class="idea" data-group="convert">
+          <span class="tag">Convert</span>
+          <h4>What a real review includes</h4>
+          <p>Shows the deliverable, so the next step feels safe.</p>
+          <div class="meta"><b>Format:</b> story + link · <b>Metric:</b> link taps</div>
+        </article>
+        <article class="idea" data-group="convert">
+          <span class="tag">Convert</span>
+          <h4>Proof + link: the two-frame story</h4>
+          <p>One frame of evidence, one frame of action — nothing else.</p>
+          <div class="meta"><b>Format:</b> 2-frame story · <b>Metric:</b> requests</div>
+        </article>
+        <article class="idea" data-group="convert">
+          <span class="tag">Convert</span>
+          <h4>From number to decision</h4>
+          <p>Turns one insight into this week's concrete action.</p>
+          <div class="meta"><b>Format:</b> reel · <b>Metric:</b> profile → request</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section id="summary" role="tabpanel" hidden>
+      <div class="lead">
+        <div><span class="kicker">9 sections → one clear priority</span><h2>Analysis ends in a decision, not a report</h2></div>
+        <p>In a real order, every finding connects to a reason, an owner, and a review metric.</p>
+      </div>
+      <div class="grid g3">
+        <article class="card"><span class="kicker">Which problem first?</span><h3>The selected problem</h3><p>With the evidence that made it matter more than the rest.</p></article>
+        <article class="card"><span class="kicker">Who does what?</span><h3>The first step</h3><p>Sized to real execution capacity, with a clear owner.</p></article>
+        <article class="card"><span class="kicker">With which metric?</span><h3>How the result is measured</h3><p>An indicator and a review date, tied to that exact action.</p></article>
+      </div>
+      <div class="grid g2">
+        <article class="card"><span class="kicker">Delivered as</span><h3>A branded decision dashboard</h3><p>Every client receives a complete, branded dashboard — not a generic report.</p></article>
+        <article class="card"><span class="kicker">Built on</span><h3>Real client data only</h3><p>No vanity metrics, no invented findings. If data is missing, we say so.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Interactive demo — structured sample data, no client data. <a href="https://mohitoocod.ir/demo-dashboard.html">Persian version</a></span>
+    <span>Built by Amir Pakzad — <a href="https://mohitoocod.ir">mohitoocod.ir</a></span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.tab');
+  var sections = document.querySelectorAll('main > section');
+
+  function activate(name) {
+    tabs.forEach(function (t) {
+      t.setAttribute('aria-selected', t.getAttribute('data-target') === name ? 'true' : 'false');
+    });
+    sections.forEach(function (s) {
+      if (s.id === name) { s.removeAttribute('hidden'); } else { s.setAttribute('hidden', ''); }
+    });
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { activate(t.getAttribute('data-target')); });
+  });
+
+  var filters = document.querySelectorAll('.filter');
+  var ideas = document.querySelectorAll('.idea');
+  filters.forEach(function (f) {
+    f.addEventListener('click', function () {
+      filters.forEach(function (x) { x.classList.remove('active'); });
+      f.classList.add('active');
+      var g = f.getAttribute('data-group');
+      ideas.forEach(function (i) {
+        if (g === 'all' || i.getAttribute('data-group') === g) { i.removeAttribute('hidden'); }
+        else { i.setAttribute('hidden', ''); }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
